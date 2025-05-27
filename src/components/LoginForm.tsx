@@ -62,7 +62,6 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10"
-                  required
                 />
               </div>
             </div>
