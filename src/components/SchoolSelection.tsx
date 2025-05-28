@@ -115,7 +115,7 @@ const SchoolSelection = ({ userEmail, userName, onSchoolSelect, onLogout }: Scho
               <img 
                 src="https://thestempedia.com/wp-content/uploads/2023/06/STEMpedia-Main-Logo.png" 
                 alt="STEMpedia Logo" 
-                className="h-16 object-contain"
+                className="h-32 object-contain"
               />
               <Button variant="outline" onClick={onLogout} className="flex items-center gap-2">
                 <LogOut className="w-4 h-4" />
@@ -155,7 +155,7 @@ const SchoolSelection = ({ userEmail, userName, onSchoolSelect, onLogout }: Scho
               <img 
                 src="https://thestempedia.com/wp-content/uploads/2023/06/STEMpedia-Main-Logo.png" 
                 alt="STEMpedia Logo" 
-                className="h-16 object-contain"
+                className="h-32 object-contain"
               />
               <div>
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">

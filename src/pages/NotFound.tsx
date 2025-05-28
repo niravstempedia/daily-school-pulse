@@ -19,7 +19,7 @@ const NotFound = () => {
           <img 
             src="https://thestempedia.com/wp-content/uploads/2023/06/STEMpedia-Main-Logo.png" 
             alt="STEMpedia Logo" 
-            className="h-20 mx-auto mb-8 object-contain"
+            className="h-40 mx-auto mb-8 object-contain"
           />
           <h1 className="text-4xl font-bold mb-4">404</h1>
           <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
