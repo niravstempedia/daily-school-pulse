@@ -6,11 +6,13 @@ import Dashboard from '../components/Dashboard';
 
 const Index = () => {
   const [currentView, setCurrentView] = useState<'login' | 'schools' | 'dashboard'>('login');
-  const [selectedTrainer, setSelectedTrainer] = useState<string>('');
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [userName, setUserName] = useState<string>('');
   const [selectedSchool, setSelectedSchool] = useState<any>(null);
 
-  const handleLogin = (trainerName: string) => {
-    setSelectedTrainer(trainerName);
+  const handleLogin = (email: string, name: string) => {
+    setUserEmail(email);
+    setUserName(name);
     setCurrentView('schools');
   };
 
@@ -20,20 +22,22 @@ const Index = () => {
   };
 
   const handleLogout = () => {
-    setSelectedTrainer('');
+    setUserEmail('');
+    setUserName('');
     setSelectedSchool(null);
     setCurrentView('login');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen">
       {currentView === 'login' && (
         <LoginForm onLogin={handleLogin} />
       )}
       
       {currentView === 'schools' && (
         <SchoolSelection 
-          trainerName={selectedTrainer} 
+          userEmail={userEmail}
+          userName={userName}
           onSchoolSelect={handleSchoolSelect}
           onLogout={handleLogout}
         />
@@ -41,7 +45,8 @@ const Index = () => {
       
       {currentView === 'dashboard' && selectedSchool && (
         <Dashboard 
-          trainer={selectedTrainer}
+          trainer={userName}
+          trainerEmail={userEmail}
           school={selectedSchool}
           onLogout={handleLogout}
           onBackToSchools={() => setCurrentView('schools')}
