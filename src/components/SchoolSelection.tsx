@@ -1,6 +1,10 @@
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, MapPin, Users, LogOut, GraduationCap } from 'lucide-react';
+import { Building2, MapPin, Users, LogOut, GraduationCap, RefreshCw } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { GoogleSheetsDataService, SchoolData, UserCredentials } from '../services/googleSheetsService';
 
 interface SchoolSelectionProps {
   userEmail: string;
@@ -9,102 +13,72 @@ interface SchoolSelectionProps {
   onLogout: () => void;
 }
 
-const schoolDatabase = {
-  'trainer@lpsmohali.com': [
-    {
-      id: 1,
-      name: "LPS Mohali",
-      location: "Mohali, Punjab",
-      totalStudents: 1200,
-      grades: "1-12",
-      logo: "🏫",
-      color: "from-blue-500 to-blue-600",
-      description: "Leading educational institution in Mohali"
-    }
-  ],
-  'coordinator@ntpcsimhadri.com': [
-    {
-      id: 2,
-      name: "NTPC Simhadri",
-      location: "Visakhapatnam, Andhra Pradesh",
-      totalStudents: 800,
-      grades: "1-10",
-      logo: "⚡",
-      color: "from-green-500 to-green-600",
-      description: "NTPC Corporate School"
-    }
-  ],
-  'admin@tclmithapur.com': [
-    {
-      id: 3,
-      name: "TCL Mithapur",
-      location: "Mithapur, Gujarat",
-      totalStudents: 650,
-      grades: "1-12",
-      logo: "🏭",
-      color: "from-orange-500 to-orange-600",
-      description: "Tata Chemicals Limited School"
-    }
-  ],
-  'teacher@edifybangalore.com': [
-    {
-      id: 4,
-      name: "Edify Bangalore",
-      location: "Bangalore, Karnataka",
-      totalStudents: 1500,
-      grades: "K-12",
-      logo: "🎓",
-      color: "from-purple-500 to-purple-600",
-      description: "Premier international school"
-    }
-  ],
-  // Demo access for testing
-  'demo@stempedia.com': [
-    {
-      id: 1,
-      name: "LPS Mohali",
-      location: "Mohali, Punjab",
-      totalStudents: 1200,
-      grades: "1-12",
-      logo: "🏫",
-      color: "from-blue-500 to-blue-600",
-      description: "Leading educational institution in Mohali"
-    },
-    {
-      id: 2,
-      name: "NTPC Simhadri",
-      location: "Visakhapatnam, Andhra Pradesh",
-      totalStudents: 800,
-      grades: "1-10",
-      logo: "⚡",
-      color: "from-green-500 to-green-600",
-      description: "NTPC Corporate School"
-    },
-    {
-      id: 3,
-      name: "TCL Mithapur",
-      location: "Mithapur, Gujarat",
-      totalStudents: 650,
-      grades: "1-12",
-      logo: "🏭",
-      color: "from-orange-500 to-orange-600",
-      description: "Tata Chemicals Limited School"
-    },
-    {
-      id: 4,
-      name: "Edify Bangalore",
-      location: "Bangalore, Karnataka",
-      totalStudents: 1500,
-      grades: "K-12",
-      logo: "🎓",
-      color: "from-purple-500 to-purple-600",
-      description: "Premier international school"
-    }
-  ]
-};
-
 const SchoolSelection = ({ userEmail, userName, onSchoolSelect, onLogout }: SchoolSelectionProps) => {
-  const userSchools = schoolDatabase[userEmail as keyof typeof schoolDatabase] || [];
+  const [schools, setSchools] = useState<SchoolData[]>([]);
+  const [userSchools, setUserSchools] = useState<SchoolData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  const sheetsService = new GoogleSheetsDataService();
+
+  useEffect(() => {
+    fetchSchoolData();
+  }, [userEmail]);
+
+  const fetchSchoolData = async () => {
+    setIsLoading(true);
+    try {
+      const [schoolsData, userCredentials] = await Promise.all([
+        sheetsService.fetchSchoolData(),
+        sheetsService.fetchUserCredentials()
+      ]);
+
+      setSchools(schoolsData);
+
+      // Find user's accessible schools
+      const user = userCredentials.find(u => u.email.toLowerCase() === userEmail.toLowerCase());
+      if (user) {
+        const accessibleSchools = schoolsData.filter(school => 
+          user.schoolIds.includes(school.id)
+        );
+        setUserSchools(accessibleSchools);
+      } else {
+        setUserSchools([]);
+      }
+    } catch (error) {
+      console.error('Error fetching school data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load school data. Please check your internet connection and API configuration.",
+        variant: "destructive",
+      });
+      // Fallback to demo data if fetch fails
+      setUserSchools([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col justify-between p-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="flex-1 flex items-center justify-center">
+          <Card className="shadow-xl">
+            <CardContent className="p-12 text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading Schools...</h2>
+              <p className="text-gray-600">Fetching data from Google Sheets</p>
+            </CardContent>
+          </Card>
+        </div>
+        <footer className="text-center py-4">
+          <p className="text-sm text-gray-600">
+            © 2024 STEMpedia. All rights reserved.
+          </p>
+        </footer>
+      </div>
+    );
+  }
 
   if (userSchools.length === 0) {
     return (
@@ -117,10 +91,20 @@ const SchoolSelection = ({ userEmail, userName, onSchoolSelect, onLogout }: Scho
                 alt="STEMpedia Logo" 
                 className="h-32 object-contain"
               />
-              <Button variant="outline" onClick={onLogout} className="flex items-center gap-2">
-                <LogOut className="w-4 h-4" />
-                Logout
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={fetchSchoolData}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Refresh
+                </Button>
+                <Button variant="outline" onClick={onLogout} className="flex items-center gap-2">
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </Button>
+              </div>
             </div>
             <Card className="shadow-xl">
               <CardContent className="p-12">
@@ -130,7 +114,7 @@ const SchoolSelection = ({ userEmail, userName, onSchoolSelect, onLogout }: Scho
                   Sorry {userName}, your email ({userEmail}) doesn't have access to any schools in our system.
                 </p>
                 <p className="text-sm text-gray-500">
-                  Please contact your administrator for access.
+                  Please contact your administrator for access or refresh to reload data.
                 </p>
               </CardContent>
             </Card>
@@ -164,14 +148,24 @@ const SchoolSelection = ({ userEmail, userName, onSchoolSelect, onLogout }: Scho
                 <p className="text-gray-600 mt-1">Select a school to begin tracking sessions</p>
               </div>
             </div>
-            <Button 
-              variant="outline" 
-              onClick={onLogout}
-              className="flex items-center gap-2 hover:bg-red-50 hover:border-red-200"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                onClick={fetchSchoolData}
+                className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-200"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Refresh Data
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={onLogout}
+                className="flex items-center gap-2 hover:bg-red-50 hover:border-red-200"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </Button>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

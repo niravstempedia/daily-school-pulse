@@ -1,10 +1,14 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Lock, Mail } from 'lucide-react';
+import { User, Lock, Mail, Key } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { GoogleSheetsDataService, UserCredentials } from '../services/googleSheetsService';
+import ApiKeySetup from './ApiKeySetup';
+import PasswordReset from './PasswordReset';
 
 interface LoginFormProps {
   onLogin: (userEmail: string, userName: string) => void;
@@ -14,17 +18,113 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showApiSetup, setShowApiSetup] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [userCredentials, setUserCredentials] = useState<UserCredentials[]>([]);
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email.trim() && password.trim()) {
-      // Extract name from email for display
-      const userName = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      onLogin(email.toLowerCase(), userName);
+  const sheetsService = new GoogleSheetsDataService();
+
+  useEffect(() => {
+    const savedApiKey = localStorage.getItem('googleSheetsApiKey');
+    if (savedApiKey) {
+      setApiKey(savedApiKey);
+      fetchUserCredentials(savedApiKey);
     } else {
-      setError('Please enter both email and password');
+      setShowApiSetup(true);
+    }
+  }, []);
+
+  const fetchUserCredentials = async (apiKey: string) => {
+    try {
+      sheetsService.setApiKey(apiKey);
+      const credentials = await sheetsService.fetchUserCredentials();
+      setUserCredentials(credentials);
+    } catch (error) {
+      console.error('Error fetching user credentials:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch user data from Google Sheets. Please check your API key and spreadsheet access.",
+        variant: "destructive",
+      });
     }
   };
+
+  const handleApiKeySet = (newApiKey: string) => {
+    setApiKey(newApiKey);
+    setShowApiSetup(false);
+    fetchUserCredentials(newApiKey);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter both email and password');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // Check for password reset
+      const resetPassword = sheetsService.getResetPassword(email.toLowerCase());
+      const passwordToCheck = resetPassword || password;
+
+      // Find user in credentials
+      const user = userCredentials.find(u => 
+        u.email.toLowerCase() === email.toLowerCase() && 
+        u.password === passwordToCheck
+      );
+
+      if (user) {
+        // Extract name from email for display
+        const userName = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        onLogin(email.toLowerCase(), userName);
+      } else {
+        setError('Invalid email or password');
+      }
+    } catch (error) {
+      setError('Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (showPasswordReset) {
+    return <PasswordReset onBack={() => setShowPasswordReset(false)} />;
+  }
+
+  if (showApiSetup) {
+    return (
+      <div className="min-h-screen flex flex-col justify-between p-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-full max-w-2xl">
+            <div className="text-center mb-8">
+              <img 
+                src="https://thestempedia.com/wp-content/uploads/2023/06/STEMpedia-Main-Logo.png" 
+                alt="STEMpedia Logo" 
+                className="h-48 mx-auto object-contain mb-6"
+              />
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                School Program Dashboard
+              </h1>
+              <p className="text-gray-600 mt-2">Configure Google Sheets API to continue</p>
+            </div>
+            <ApiKeySetup onApiKeySet={handleApiKeySet} />
+          </div>
+        </div>
+        <footer className="text-center py-4">
+          <p className="text-sm text-gray-600">
+            © 2024 STEMpedia. All rights reserved.
+          </p>
+        </footer>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col justify-between p-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -59,6 +159,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -75,6 +176,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -88,9 +190,31 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
               <Button 
                 type="submit" 
                 className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                disabled={isLoading}
               >
-                Sign In to Dashboard
+                {isLoading ? 'Signing In...' : 'Sign In to Dashboard'}
               </Button>
+
+              <div className="flex justify-between text-sm">
+                <Button
+                  type="button"
+                  variant="link"
+                  className="text-blue-600 hover:text-blue-700 p-0"
+                  onClick={() => setShowPasswordReset(true)}
+                >
+                  Reset Password
+                </Button>
+                
+                <Button
+                  type="button"
+                  variant="link"
+                  className="text-gray-600 hover:text-gray-700 p-0 flex items-center gap-1"
+                  onClick={() => setShowApiSetup(true)}
+                >
+                  <Key className="w-3 h-3" />
+                  API Settings
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
