@@ -34,7 +34,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             <img 
               src="https://thestempedia.com/wp-content/uploads/2023/06/STEMpedia-Main-Logo.png" 
               alt="STEMpedia Logo" 
-              className="h-16 mx-auto object-contain"
+              className="h-36 mx-auto object-contain"
             />
           </div>
           <div>

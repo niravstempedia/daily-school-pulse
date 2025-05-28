@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -123,7 +122,7 @@ const Dashboard = ({ trainer, trainerEmail, school, onLogout, onBackToSchools }:
             <img 
               src="https://thestempedia.com/wp-content/uploads/2023/06/STEMpedia-Main-Logo.png" 
               alt="STEMpedia Logo" 
-              className="h-8 object-contain"
+              className="h-24 object-contain"
             />
             <Button 
               variant="outline" 
