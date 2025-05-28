@@ -1,12 +1,12 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, LogOut, ArrowLeft, BarChart3, TrendingUp, Calendar, Users, Edit3 } from 'lucide-react';
+import { Building2, LogOut, ArrowLeft, BarChart3, TrendingUp, Calendar, Users, Edit3, FileSpreadsheet } from 'lucide-react';
 import SessionForm from './SessionForm';
 import SessionHistory from './SessionHistory';
 import SessionAnalytics from './SessionAnalytics';
+import GoogleSheetsExport from './GoogleSheetsExport';
 
 interface DashboardProps {
   trainer: string;
@@ -193,10 +193,14 @@ const Dashboard = ({ trainer, trainerEmail, school, onLogout, onBackToSchools }:
 
         {/* Main Content */}
         <Tabs defaultValue={editingSession ? "edit-session" : "new-session"} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 h-12">
+          <TabsList className="grid w-full grid-cols-5 h-12">
             <TabsTrigger value="new-session" disabled={!!editingSession}>New Session</TabsTrigger>
             <TabsTrigger value="history">Session History</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="google-export">
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Google Export
+            </TabsTrigger>
             {editingSession && (
               <TabsTrigger value="edit-session" className="bg-orange-100 text-orange-700">
                 <Edit3 className="w-4 h-4 mr-2" />
@@ -218,6 +222,10 @@ const Dashboard = ({ trainer, trainerEmail, school, onLogout, onBackToSchools }:
           
           <TabsContent value="analytics">
             <SessionAnalytics sessions={sessions} school={school} />
+          </TabsContent>
+
+          <TabsContent value="google-export">
+            <GoogleSheetsExport sessions={sessions} school={school} />
           </TabsContent>
 
           {editingSession && (
