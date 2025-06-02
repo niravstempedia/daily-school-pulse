@@ -1,20 +1,15 @@
 
 import { useState } from 'react';
-import LoginForm from '../components/LoginForm';
-import SchoolSelection from '../components/SchoolSelection';
-import Dashboard from '../components/Dashboard';
+import { useAuth } from '@/hooks/useAuth';
+import GoogleAuth from '@/components/GoogleAuth';
+import SchoolSelectionNew from '@/components/SchoolSelectionNew';
+import Dashboard from '@/components/Dashboard';
+import { Loader2 } from 'lucide-react';
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<'login' | 'schools' | 'dashboard'>('login');
-  const [userEmail, setUserEmail] = useState<string>('');
-  const [userName, setUserName] = useState<string>('');
+  const { user, loading } = useAuth();
+  const [currentView, setCurrentView] = useState<'schools' | 'dashboard'>('schools');
   const [selectedSchool, setSelectedSchool] = useState<any>(null);
-
-  const handleLogin = (email: string, name: string) => {
-    setUserEmail(email);
-    setUserName(name);
-    setCurrentView('schools');
-  };
 
   const handleSchoolSelect = (school: any) => {
     setSelectedSchool(school);
@@ -22,34 +17,43 @@ const Index = () => {
   };
 
   const handleLogout = () => {
-    setUserEmail('');
-    setUserName('');
     setSelectedSchool(null);
-    setCurrentView('login');
+    setCurrentView('schools');
   };
+
+  const handleBackToSchools = () => {
+    setSelectedSchool(null);
+    setCurrentView('schools');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center gap-2 text-gray-600">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <GoogleAuth />;
+  }
 
   return (
     <div className="min-h-screen">
-      {currentView === 'login' && (
-        <LoginForm onLogin={handleLogin} />
-      )}
-      
       {currentView === 'schools' && (
-        <SchoolSelection 
-          userEmail={userEmail}
-          userName={userName}
-          onSchoolSelect={handleSchoolSelect}
-          onLogout={handleLogout}
-        />
+        <SchoolSelectionNew onSchoolSelect={handleSchoolSelect} />
       )}
       
       {currentView === 'dashboard' && selectedSchool && (
         <Dashboard 
-          trainer={userName}
-          trainerEmail={userEmail}
+          trainer={user.user_metadata?.full_name || user.email || 'User'}
+          trainerEmail={user.email || ''}
           school={selectedSchool}
           onLogout={handleLogout}
-          onBackToSchools={() => setCurrentView('schools')}
+          onBackToSchools={handleBackToSchools}
         />
       )}
     </div>
