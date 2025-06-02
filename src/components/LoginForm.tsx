@@ -4,91 +4,70 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Mail } from 'lucide-react';
+import { GraduationCap, User, Lock } from 'lucide-react';
 
 interface LoginFormProps {
-  onLogin: (userEmail: string, userName: string) => void;
+  onLogin: (trainerName: string) => void;
 }
 
-// Authorized email addresses
-const authorizedEmails = [
-  'trainer@lpsmohali.com',
-  'coordinator@ntpcsimhadri.com',
-  'admin@tclmithapur.com',
-  'teacher@edifybangalore.com',
-  'demo@stempedia.com'
-];
-
 const LoginForm = ({ onLogin }: LoginFormProps) => {
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) {
-      setError('Please enter your email address');
-      return;
+    if (username.trim()) {
+      onLogin(username);
     }
-
-    const normalizedEmail = email.toLowerCase().trim();
-    
-    if (!authorizedEmails.includes(normalizedEmail)) {
-      setError('This email address is not authorized to access the system');
-      return;
-    }
-
-    // Extract name from email for display
-    const userName = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    onLogin(normalizedEmail, userName);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
-        <CardHeader className="text-center space-y-6 pb-8">
-          <div className="mx-auto">
-            <img 
-              src="https://thestempedia.com/wp-content/uploads/2023/06/STEMpedia-Main-Logo.png" 
-              alt="STEMpedia Logo" 
-              className="h-36 mx-auto object-contain"
-            />
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-xl">
+        <CardHeader className="text-center space-y-4">
+          <div className="mx-auto bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center">
+            <GraduationCap className="w-8 h-8 text-white" />
           </div>
-          <div>
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              School Program Dashboard
-            </CardTitle>
-            <p className="text-gray-600 mt-2">Enter your authorized email to access</p>
-          </div>
+          <CardTitle className="text-2xl font-bold text-gray-800">
+            School Program Dashboard
+          </CardTitle>
+          <p className="text-gray-600">Please login to access your dashboard</p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email Address</Label>
+              <Label htmlFor="username">Username</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your authorized email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  id="username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="pl-10"
                   required
                 />
               </div>
             </div>
-
-            {error && (
-              <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">
-                {error}
-              </div>
-            )}
             
-            <Button 
-              type="submit" 
-              className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
-              Access Dashboard
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
+              Login to Dashboard
             </Button>
           </form>
         </CardContent>

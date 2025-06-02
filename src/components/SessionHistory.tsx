@@ -1,15 +1,13 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Users, BookOpen, User, Edit3 } from 'lucide-react';
+import { Calendar, Clock, Users, BookOpen, User } from 'lucide-react';
 
 interface SessionHistoryProps {
   sessions: any[];
-  onEditSession?: (session: any) => void;
 }
 
-const SessionHistory = ({ sessions, onEditSession }: SessionHistoryProps) => {
+const SessionHistory = ({ sessions }: SessionHistoryProps) => {
   if (sessions.length === 0) {
     return (
       <Card>
@@ -55,20 +53,7 @@ const SessionHistory = ({ sessions, onEditSession }: SessionHistoryProps) => {
                   <Calendar className="w-5 h-5 text-blue-600" />
                   {formatDate(session.date)}
                 </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">Grade {session.grade}</Badge>
-                  {onEditSession && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onEditSession(session)}
-                      className="flex items-center gap-1"
-                    >
-                      <Edit3 className="w-3 h-3" />
-                      Edit
-                    </Button>
-                  )}
-                </div>
+                <Badge variant="secondary">Grade {session.grade}</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -150,11 +135,6 @@ const SessionHistory = ({ sessions, onEditSession }: SessionHistoryProps) => {
               {/* Metadata */}
               <div className="pt-2 border-t border-gray-100 text-xs text-gray-500">
                 Recorded by {session.trainer} • {new Date(session.createdAt).toLocaleString()}
-                {session.editHistory && session.editHistory.length > 0 && (
-                  <span className="ml-2 text-orange-600">
-                    • Edited {session.editHistory.length} time{session.editHistory.length !== 1 ? 's' : ''}
-                  </span>
-                )}
               </div>
             </CardContent>
           </Card>

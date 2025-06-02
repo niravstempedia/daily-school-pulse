@@ -6,29 +6,26 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Clock, Upload, Save, X } from 'lucide-react';
+import { Calendar, Clock, Upload, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface SessionFormProps {
   onSubmit: (data: any) => void;
-  school?: any;
-  editingSession?: any;
-  onCancel?: () => void;
 }
 
-const SessionForm = ({ onSubmit, school, editingSession, onCancel }: SessionFormProps) => {
+const SessionForm = ({ onSubmit }: SessionFormProps) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    date: editingSession?.date || '',
-    time: editingSession?.time || '',
-    duration: editingSession?.duration || '',
-    grade: editingSession?.grade || '',
-    boysAttendance: editingSession?.boysAttendance || '',
-    girlsAttendance: editingSession?.girlsAttendance || '',
-    topicsTaught: editingSession?.topicsTaught || '',
-    teacherAttended: editingSession?.teacherAttended || '',
-    summary: editingSession?.summary || '',
-    mediaFiles: editingSession?.mediaFiles || []
+    date: '',
+    time: '',
+    duration: '',
+    grade: '',
+    boysAttendance: '',
+    girlsAttendance: '',
+    topicsTaught: '',
+    teacherAttended: '',
+    summary: '',
+    mediaFiles: [] as File[]
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -64,43 +61,33 @@ const SessionForm = ({ onSubmit, school, editingSession, onCancel }: SessionForm
 
     onSubmit(formData);
     
-    // Reset form only if not editing
-    if (!editingSession) {
-      setFormData({
-        date: '',
-        time: '',
-        duration: '',
-        grade: '',
-        boysAttendance: '',
-        girlsAttendance: '',
-        topicsTaught: '',
-        teacherAttended: '',
-        summary: '',
-        mediaFiles: []
-      });
-    }
+    // Reset form
+    setFormData({
+      date: '',
+      time: '',
+      duration: '',
+      grade: '',
+      boysAttendance: '',
+      girlsAttendance: '',
+      topicsTaught: '',
+      teacherAttended: '',
+      summary: '',
+      mediaFiles: []
+    });
 
     toast({
-      title: editingSession ? "Session Updated Successfully" : "Session Recorded Successfully",
-      description: editingSession ? "Your session report has been updated." : "Your daily session report has been saved.",
+      title: "Session Recorded Successfully",
+      description: "Your daily session report has been saved.",
     });
   };
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-blue-600" />
-            {editingSession ? 'Edit Session Report' : 'Daily Session Report'}
-          </CardTitle>
-          {editingSession && onCancel && (
-            <Button variant="outline" onClick={onCancel} className="flex items-center gap-2">
-              <X className="w-4 h-4" />
-              Cancel
-            </Button>
-          )}
-        </div>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-blue-600" />
+          Daily Session Report
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -259,7 +246,7 @@ const SessionForm = ({ onSubmit, school, editingSession, onCancel }: SessionForm
           {/* Submit Button */}
           <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">
             <Save className="w-4 h-4 mr-2" />
-            {editingSession ? 'Update Session Report' : 'Save Session Report'}
+            Save Session Report
           </Button>
         </form>
       </CardContent>
